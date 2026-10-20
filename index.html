@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>tzintli - obra total transónica y asémica</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            cursor: crosshair;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #universo {
+            position: relative;
+            width: 100vw; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #zona-galaxia {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            height: 70vh;
+            pointer-events: none;
+        }
+        #zona-subtitulos {
+            position: relative;
+            height: 30vh;
+            width: 100%;
+            background-color: #000000;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            pointer-events: none;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #interfaz-inicio {
+            position: absolute;
+            z-index: 10;
+            text-align: center;
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.4);
+            user-select: none;
+            text-transform: uppercase;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+        .estrella-letra {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform: translate(-50%, -50%);
+            transition: left 1.2s cubic-bezier(0.19, 1, 0.22, 1), top 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+            user-select: none;
+        }
+        .punto {
+            width: 5px;
+            height: 5px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #ffffff, 0 0 15px #ffffff;
+            margin-bottom: 6px;
+        }
+        .caracter {
+            font-size: 22px;
+            color: #ffffff;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="interfaz-inicio">Mueve el mouse para encender la obra total</div>
+
+    <div id="universo">
+        <div id="zona-galaxia"></div>
+        <div id="zona-subtitulos">
+            <canvas id="lienzo-subtitulo"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const palabras = ["iilnttz", "iilntzt", "iilnztt", "iiltntz", "iiltnzt", "iilttnz", "iilttzn", "iiltznt", "iiltztn", "iilzntt", "iilztnt", "iilzttn", "iinlttz", "iinltzt", "iinlztt", "iintltz", "iintlzt", "iinttlz", "iinttzl", "iintzlt", "iintztl", "iinzltt", "iinztlt", "iinzttl", "iitlntz", "iitlnzt", "iitltnz", "iitltzn", "iitlznt", "iitlztn", "iitnltz", "iitnlzt", "iitntlz", "iitntzl", "iitnzlt", "iitnztl", "iittlnz", "iittlzn", "iittnlz", "iittnzl", "iittzln", "iittznl", "iitzlnt", "iitzltn", "iitznlt", "iitzntl", "iitztln", "iitztnl", "iizlntt", "iizltnt", "iizlttn", "iiznltt", "iizntlt", "iiznttl", "iiztlnt", "iiztltn", "iiztnlt", "iiztntl", "iizttln", "iizttnl", "ilinttz", "ilintzt", "ilinztt", "ilitntz", "ilitnzt", "ilittnz", "ilittzn", "ilitznt", "ilitztn", "ilizntt", "iliztnt", "ilizttn", "ilnittz", "ilnitzt", "ilniztt", "ilntitz", "ilntizt", "ilnttiz", "ilnttzi", "ilntzit", "ilntzti", "ilnzitt", "ilnztit", "ilnztti", "iltintz", "iltinzt", "iltitnz", "iltitzn", "iltiznt", "iltiztn", "iltnitz", "iltnizt", "iltntiz", "iltntzi", "iltnzit", "iltnzti", "ilttinz", "ilttizn", "ilttniz", "ilttnzi", "ilttzin", "ilttzni", "iltzint", "iltzitn", "iltznit", "iltznti", "iltztin", "iltztni", "ilzintt", "ilzitnt", "ilzittn", "ilznitt", "ilzntit", "ilzntti", "ilztint", "ilztitn", "ilztnit", "ilztnti", "ilzttin", "ilzttni", "inilttz", "iniltzt", "inilztt", "initltz", "initlzt", "inittlz", "inittzl", "initzlt", "initztl", "inizltt", "iniztlt", "inizttl", "inlittz", "inlitzt", "inliztt", "inltitz", "inltizt", "inlttiz", "inlttzi", "inltzit", "inltzti", "inlzitt", "inlztit", "inlztti", "intiltz", "intilzt", "intitlz", "intitzl", "intizlt", "intiztl", "intlitz", "intlizt", "intltiz", "intltzi", "intlzit", "intlzti", "inttilz", "inttizl", "inttliz", "inttlzi", "inttzil", "inttzli", "intzilt", "intzitl", "intzlit", "intzlti", "intztil", "intztli", "inziltt", "inzitlt", "inzittl", "inzlitt", "inzltit", "inzltti", "inztilt", "inztitl", "inztlit", "inztlti", "inzttil", "inzttli", "itilntz", "itilnzt", "itiltnz", "itiltzn", "itilznt", "itilztn", "itinltz", "itinlzt", "itintlz", "itintzl", "itinzlt", "itinztl", "ititlnz", "ititlzn", "ititnlz", "ititnzl", "ititzln", "ititznl", "itizlnt", "itizltn", "itiznlt", "itizntl", "itiztln", "itiztnl", "itlintz", "itlinzt", "itlitnz", "itlitzn", "itliznt", "itliztn", "itlnitz", "itlnizt", "itlntiz", "itlntzi", "itlnzit", "itlnzti", "itltinz", "itltizn", "itltniz", "itltnzi", "itltzin", "itltzni", "itlzint", "itlzitn", "itlznit", "itlznti", "itlztin", "itlztni", "itniltz", "itnilzt", "itnitlz", "itnitzl", "itnizlt", "itniztl", "itnlitz", "itnlizt", "itnltiz", "itnltzi", "itnlzit", "itnlzti", "itntilz", "itntizl", "itntliz", "itntlzi", "itntzil", "itntzli", "itnzilt", "itnzitl", "itnzlit", "itnzlti", "itnztil", "itnztli", "ittilnz", "ittilzn", "ittinlz", "ittinzl", "ittizln", "ittiznl", "ittlinz", "ittlizn", "ittlniz", "ittlnzi", "ittlzin", "ittlzni", "ittnilz", "ittnizl", "ittnliz", "ittnlzi", "ittnzil", "ittnzli", "ittziln", "ittzinl", "ittzlin", "ittzlni", "ittznil", "ittznli", "itzilnt", "itziltn", "itzinlt", "itzintl", "itzitln", "itzitnl", "itzlint", "itzlitn", "itzlnit", "itzlnti", "itzltin", "itzltni", "itznilt", "itznitl", "itznlit", "itznlti", "itzntil", "itzntli", "itztiln", "itztinl", "itztlin", "itztlni", "itztnil", "itztnli", "izilntt", "iziltnt", "izilttn", "izinltt", "izintlt", "izinttl", "izitlnt", "izitltn", "izitnlt", "izitntl", "izittln", "izittnl", "izlintt", "izlitnt", "izlittn", "izlnitt", "izlntit", "izlntti", "izltint", "izltitn", "izltnit", "izltnti", "izlttin", "izlttni", "izniltt", "iznitlt", "iznittl", "iznlitt", "iznltit", "iznltti", "izntilt", "izntitl", "izntlit", "izntlti", "iznttil", "iznttli", "iztilnt", "iztiltn", "iztinlt", "iztintl", "iztitln", "iztitnl", "iztlint", "iztlitn", "iztlnit", "iztlnti", "iztltin", "iztltni", "iztnilt", "iztnitl", "iztnlit", "iztnlti", "iztntil", "iztntli", "izttiln", "izttinl", "izttlin", "izttlni", "izttnil", "izttnli", "liinttz", "liintzt", "liinztt", "liitntz", "liitnzt", "liittnz", "liittzn", "liitznt", "liitztn", "liizntt", "liiztnt", "liizttn", "linittz", "linitzt", "liniztt", "lintitz", "lintizt", "linttiz", "linttzi", "lintzit", "lintzti", "linzitt", "linztit", "linztti", "litintz", "litinzt", "lititnz", "lititzn", "litiznt", "litiztn", "litnitz", "litnizt", "litntiz", "litntzi", "litnzit", "litnzti", "littinz", "littizn", "littniz", "littnzi", "littzin", "littzni", "litzint", "litzitn", "litznit", "litznti", "litztin", "litztni", "lizintt", "lizitnt", "lizittn", "liznitt", "lizntit", "lizntti", "liztint", "liztitn", "liztnit", "liztnti", "lizttin", "lizttni", "lniittz", "lniitzt", "lniiztt", "lnititz", "lnitizt", "lnittiz", "lnittzi", "lnitzit", "lnitzti", "lnizitt", "lniztit", "lniztti", "lntiitz", "lntiizt", "lntitiz", "lntitzi", "lntizit", "lntizti", "lnttiiz", "lnttizi", "lnttzii", "lntziit", "lntziti", "lntztii", "lnziitt", "lnzitit", "lnzitti", "lnztiit", "lnztiti", "lnzttii", "ltiintz", "ltiinzt", "ltiitnz", "ltiitzn", "ltiiznt", "ltiiztn", "ltinitz", "ltinizt", "ltintiz", "ltintzi", "ltinzit", "ltinzti", "ltitinz", "ltitizn", "ltitniz", "ltitnzi", "ltitzin", "ltitzni", "ltizint", "ltizitn", "ltiznit", "ltiznti", "ltiztin", "ltiztni", "ltniitz", "ltniizt", "ltnitiz", "ltnitzi", "ltnizit", "ltnizti", "ltntiiz", "ltntizi", "ltntzii", "ltnziit", "ltnziti", "ltnztii", "lttiinz", "lttiizn", "lttiniz", "lttinzi", "lttizin", "lttizni", "lttniiz", "lttnizi", "lttnzii", "lttziin", "lttzini", "lttznii", "ltziint", "ltziitn", "ltzinit", "ltzinti", "ltzitin", "ltzitni", "ltzniit", "ltzniti", "ltzntii", "ltztiin", "ltztini", "ltztnii", "lziintt", "lziitnt", "lziittn", "lzinitt", "lzintit", "lzintti", "lzitint", "lzititn", "lzitnit", "lzitnti", "lzittin", "lzittni", "lzniitt", "lznitit", "lznitti", "lzntiit", "lzntiti", "lznttii", "lztiint", "lztiitn", "lztinit", "lztinti", "lztitin", "lztitni", "lztniit", "lztniti", "lztntii", "lzttiin", "lzttini", "lzttnii", "niilttz", "niiltzt", "niilztt", "niitltz", "niitlzt", "niittlz", "niittzl", "niitzlt", "niitztl", "niizltt", "niiztlt", "niizttl", "nilittz", "nilitzt", "niliztt", "niltitz", "niltizt", "nilttiz", "nilttzi", "niltzit", "niltzti", "nilzitt", "nilztit", "nilztti", "nitiltz", "nitilzt", "nititlz", "nititzl", "nitizlt", "nitiztl", "nitlitz", "nitlizt", "nitltiz", "nitltzi", "nitlzit", "nitlzti", "nittilz", "nittizl", "nittliz", "nittlzi", "nittzil", "nittzli", "nitzilt", "nitzitl", "nitzlit", "nitzlti", "nitztil", "nitztli", "niziltt", "nizitlt", "nizittl", "nizlitt", "nizltit", "nizltti", "niztilt", "niztitl", "niztlit", "niztlti", "nizttil", "nizttli", "nliittz", "nliitzt", "nliiztt", "nlititz", "nlitizt", "nlittiz", "nlittzi", "nlitzit", "nlitzti", "nlizitt", "nliztit", "nliztti", "nltiitz", "nltiizt", "nltitiz", "nltitzi", "nltizit", "nltizti", "nlttiiz", "nlttizi", "nlttzii", "nltziit", "nltziti", "nltztii", "nlziitt", "nlzitit", "nlzitti", "nlztiit", "nlztiti", "nlzttii", "ntiiltz", "ntiilzt", "ntiitlz", "ntiitzl", "ntiizlt", "ntiiztl", "ntilitz", "ntilizt", "ntiltiz", "ntiltzi", "ntilzit", "ntilzti", "ntitilz", "ntitizl", "ntitliz", "ntitlzi", "ntitzil", "ntitzli", "ntizilt", "ntizitl", "ntizlit", "ntizlti", "ntiztil", "ntiztli", "ntliitz", "ntliizt", "ntlitiz", "ntlitzi", "ntlizit", "ntlizti", "ntltiiz", "ntltizi", "ntltzii", "ntlziit", "ntlziti", "ntlztii", "nttiilz", "nttiizl", "nttiliz", "nttilzi", "nttizil", "nttizli", "nttliiz", "nttlizi", "nttlzii", "nttziil", "nttzili", "nttzlii", "ntziilt", "ntziitl", "ntzilit", "ntzilti", "ntzitil", "ntzitli", "ntzliit", "ntzliti", "ntzltii", "ntztiil", "ntztili", "ntztlii", "nziiltt", "nziitlt", "nziittl", "nzilitt", "nziltit", "nziltti", "nzitilt", "nzititl", "nzitlit", "nzitlti", "nzittil", "nzittli", "nzliitt", "nzlitit", "nzlitti", "nzltiit", "nzltiti", "nzlttii", "nztiilt", "nztiitl", "nztilit", "nztilti", "nztitil", "nztitli", "nztliit", "nztliti", "nztltii", "nzttiil", "nzttili", "nzttlii", "tiilntz", "tiilnzt", "tiiltnz", "tiiltzn", "tiilznt", "tiilztn", "tiinltz", "tiinlzt", "tiintlz", "tiintzl", "tiinzlt", "tiinztl", "tiitlnz", "tiitlzn", "tiitnlz", "tiitnzl", "tiitzln", "tiitznl", "tiizlnt", "tiizltn", "tiiznlt", "tiizntl", "tiiztln", "tiiztnl", "tilintz", "tilinzt", "tilitnz", "tilitzn", "tiliznt", "tiliztn", "tilnitz", "tilnizt", "tilntiz", "tilntzi", "tilnzit", "tilnzti", "tiltinz", "tiltizn", "tiltniz", "tiltnzi", "tiltzin", "tiltzni", "tilzint", "tilzitn", "tilznit", "tilznti", "tilztin", "tilztni", "tiniltz", "tinilzt", "tinitlz", "tinitzl", "tinizlt", "tiniztl", "tinlitz", "tinlizt", "tinltiz", "tinltzi", "tinlzit", "tinlzti", "tintilz", "tintizl", "tintliz", "tintlzi", "tintzil", "tintzli", "tinzilt", "tinzitl", "tinzlit", "tinzlti", "tinztil", "tinztli", "titilnz", "titilzn", "titinlz", "titinzl", "titizln", "titiznl", "titlinz", "titlizn", "titlniz", "titlnzi", "titlzin", "titlzni", "titnilz", "titnizl", "titnliz", "titnlzi", "titnzil", "titnzli", "titziln", "titzinl", "titzlin", "titzlni", "titznil", "titznli", "tizilnt", "tiziltn", "tizinlt", "tizintl", "tizitln", "tizitnl", "tizlint", "tizlitn", "tizlnit", "tizlnti", "tizltin", "tizltni", "tiznilt", "tiznitl", "tiznlit", "tiznlti", "tizntil", "tizntli", "tiztiln", "tiztinl", "tiztlin", "tiztlni", "tiztnil", "tiztnli", "tliintz", "tliinzt", "tliitnz", "tliitzn", "tliiznt", "tliiztn", "tlinitz", "tlinizt", "tlintiz", "tlintzi", "tlinzit", "tlinzti", "tlitinz", "tlitizn", "tlitniz", "tlitnzi", "tlitzin", "tlitzni", "tlizint", "tlizitn", "tliznit", "tliznti", "tliztin", "tliztni", "tlniitz", "tlniizt", "tlnitiz", "tlnitzi", "tlnizit", "tlnizti", "tlntiiz", "tlntizi", "tlntzii", "tlnziit", "tlnziti", "tlnztii", "tltiinz", "tltiizn", "tltiniz", "tltinzi", "tltizin", "tltizni", "tltniiz", "tltnizi", "tltnzii", "tltziin", "tltzini", "tltznii", "tlziint", "tlziitn", "tlzinit", "tlzinti", "tlzitin", "tlzitni", "tlzniit", "tlzniti", "tlzntii", "tlztiin", "tlztini", "tlztnii", "tniiltz", "tniilzt", "tniitlz", "tniitzl", "tniizlt", "tniiztl", "tnilitz", "tnilizt", "tniltiz", "tniltzi", "tnilzit", "tnilzti", "tnitilz", "tnitizl", "tnitliz", "tnitlzi", "tnitzil", "tnitzli", "tnizilt", "tnizitl", "tnizlit", "tnizlti", "tniztil", "tniztli", "tnliitz", "tnliizt", "tnlitiz", "tnlitzi", "tnlizit", "tnlizti", "tnltiiz", "tnltizi", "tnltzii", "tnlziit", "tnlziti", "tnlztii", "tntiilz", "tntiizl", "tntiliz", "tntilzi", "tntizil", "tntizli", "tntliiz", "tntlizi", "tntlzii", "tntziil", "tntzili", "tntzlii", "tnziilt", "tnziitl", "tnzilit", "tnzilti", "tnzitil", "tnzitli", "tnzliit", "tnzliti", "tnzltii", "tnztiil", "tnztili", "tnztlii", "ttiilnz", "ttiilzn", "ttiinlz", "ttiinzl", "ttiizln", "ttiiznl", "ttilinz", "ttilizn", "ttilniz", "ttilnzi", "ttilzin", "ttilzni", "ttinilz", "ttinizl", "ttinliz", "ttinlzi", "ttinzil", "ttinzli", "ttiziln", "ttizinl", "ttizlin", "ttizlni", "ttiznil", "ttiznli", "ttliinz", "ttliizn", "ttliniz", "ttlinzi", "ttlizin", "ttlizni", "ttlniiz", "ttlnizi", "ttlnzii", "ttlziin", "ttlzini", "ttlznii", "ttniilz", "ttniizl", "ttniliz", "ttnilzi", "ttnizil", "ttnizli", "ttnliiz", "ttnlizi", "ttnlzii", "ttnziil", "ttnzili", "ttnzlii", "ttziiln", "ttziinl", "ttzilin", "ttzilni", "ttzinil", "ttzinli", "ttzliin", "ttzlini", "ttzlnii", "ttzniil", "ttznili", "ttznlii", "tziilnt", "tziiltn", "tziinlt", "tziintl", "tziitln", "tziitnl", "tzilint", "tzilitn", "tzilnit", "tzilnti", "tziltin", "tziltni", "tzinilt", "tzinitl", "tzinlit", "tzinlti", "tzintil", "tzintli", "tzitiln", "tzitinl", "tzitlin", "tzitlni", "tzitnil", "tzitnli", "tzliint", "tzliitn", "tzlinit", "tzlinti", "tzlitin", "tzlitni", "tzlniit", "tzlniti", "tzlntii", "tzltiin", "tzltini", "tzltnii", "tzniilt", "tzniitl", "tznilit", "tznilti", "tznitil", "tznitli", "tznliit", "tznliti", "tznltii", "tzntiil", "tzntili", "tzntlii", "tztiiln", "tztiinl", "tztilin", "tztilni", "tztinil", "tztinli", "tztliin", "tztlini", "tztlnii", "tztniil", "tztnili", "tztnlii", "ziilntt", "ziiltnt", "ziilttn", "ziinltt", "ziintlt", "ziinttl", "ziitlnt", "ziitltn", "ziitnlt", "ziitntl", "ziittln", "ziittnl", "zilintt", "zilitnt", "zilittn", "zilnitt", "zilntit", "zilntti", "ziltint", "ziltitn", "ziltnit", "ziltnti", "zilttin", "zilttni", "ziniltt", "zinitlt", "zinittl", "zinlitt", "zinltit", "zinltti", "zintilt", "zintitl", "zintlit", "zintlti", "zinttil", "zinttli", "zitilnt", "zitiltn", "zitinlt", "zitintl", "zititln", "zititnl", "zitlint", "zitlitn", "zitlnit", "zitlnti", "zitltin", "zitltni", "zitnilt", "zitnitl", "zitnlit", "zitnlti", "zitntil", "zitntli", "zittiln", "zittinl", "zittlin", "zittlni", "zittnil", "zittnli", "zliintt", "zliitnt", "zliittn", "zlinitt", "zlintit", "zlintti", "zlitint", "zlititn", "zlitnit", "zlitnti", "zlittin", "zlittni", "zlniitt", "zlnitit", "zlnitti", "zlntiit", "zlntiti", "zlnttii", "zltiint", "zltiitn", "zltinit", "zltinti", "zltitin", "zltitni", "zltniit", "zltniti", "zltntii", "zlttiin", "zlttini", "zlttnii", "zniiltt", "zniitlt", "zniittl", "znilitt", "zniltit", "zniltti", "znitilt", "znititl", "znitlit", "znitlti", "znittil", "znittli", "znliitt", "znlitit", "znlitti", "znltiit", "znltiti", "znlttii", "zntiilt", "zntiitl", "zntilit", "zntilti", "zntitil", "zntitli", "zntliit", "zntliti", "zntltii", "znttiil", "znttili", "znttlii", "ztiilnt", "ztiiltn", "ztiinlt", "ztiintl", "ztiitln", "ztiitnl", "ztilint", "ztilitn", "ztilnit", "ztilnti", "ztiltin", "ztiltni", "ztinilt", "ztinitl", "ztinlit", "ztinlti", "ztintil", "ztintli", "ztitiln", "ztitinl", "ztitlin", "ztitlni", "ztitnil", "ztitnli", "ztliint", "ztliitn", "ztlinit", "ztlinti", "ztlitin", "ztlitni", "ztlniit", "ztlniti", "ztlntii", "ztltiin", "ztltini", "ztltnii", "ztniilt", "ztniitl", "ztnilit", "ztnilti", "ztnitil", "ztnitli", "ztnliit", "ztnliti", "ztnltii", "ztntiil", "ztntili", "ztntlii", "zttiiln", "zttiinl", "zttilin", "zttilni", "zttinil", "zttinli", "zttliin", "zttlini", "zttlnii", "zttniil", "zttnili", "zttnlii"];
+        const totalPalabras = palabras.length;
+        
+        const galaxia = document.getElementById('zona-galaxia');
+        const canvas = document.getElementById('lienzo-subtitulo');
+        const ctx = canvas.getContext('2d');
+        const avisoInicio = document.getElementById('interfaz-inicio');
+        
+        let estrellasData = [];
+        const numLetras = 7;
+
+        let audioCtx = null;
+        let osciladorFijo = null;
+        let osciladorModulador = null;
+        let gainNodeNodos = null;      
+        let gainNodeEstatica = null;   
+
+        function inicializarLienzo() {
+            const bounding = canvas.parentElement.getBoundingClientRect();
+            canvas.width = bounding.width;
+            canvas.height = bounding.height;
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        window.addEventListener('resize', inicializarLienzo);
+        inicializarLienzo();
+
+        for (let i = 0; i < numLetras; i++) {
+            const div = document.createElement('div');
+            div.className = 'estrella-letra';
+            
+            const punto = document.createElement('div');
+            punto.className = 'punto';
+            
+            const caracter = document.createElement('div');
+            caracter.className = 'caracter';
+            
+            div.appendChild(punto);
+            div.appendChild(caracter);
+            galaxia.appendChild(div);
+            
+            estrellasData.push({ elemento: div, texto: caracter });
+        }
+
+        const escritorSubtitulo = {
+            x: window.innerWidth * 0.15, 
+            y: 0,                        
+            yBase: 0,
+            pasoPixel: 3.5 
+        };
+
+        function reiniciarSubtitulo() {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            escritorSubtitulo.x = window.innerWidth * 0.15;
+            escritorSubtitulo.y = canvas.height / 2;
+            escritorSubtitulo.yBase = canvas.height / 2;
+        }
+
+        function crearFiltroEstatica() {
+            const tamanoBuffer = audioCtx.sampleRate * 2;
+            const bufferRuido = audioCtx.createBuffer(1, tamanoBuffer, audioCtx.sampleRate);
+            const salidaData = bufferRuido.getChannelData(0);
+            
+            for (let i = 0; i < tamanoBuffer; i++) {
+                salidaData[i] = Math.random() * 2 - 1;
+            }
+            
+            const fuenteRuido = audioCtx.createBufferSource();
+            fuenteRuido.buffer = bufferRuido;
+            fuenteRuido.loop = true;
+            
+            const filtroBajo = audioCtx.createBiquadFilter();
+            filtroBajo.type = 'lowpass';
+            filtroBajo.frequency.setValueAtTime(320, audioCtx.currentTime); 
+            
+            gainNodeEstatica = audioCtx.createGain();
+            gainNodeEstatica.gain.setValueAtTime(0.02, audioCtx.currentTime); 
+            
+            fuenteRuido.connect(filtroBajo);
+            filtroBajo.connect(gainNodeEstatica);
+            gainNodeEstatica.connect(audioCtx.destination);
+            
+            fuenteRuido.start();
+        }
+
+        function inicializarAudio() {
+            if (audioCtx) return;
+            
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            crearFiltroEstatica();
+            
+            gainNodeNodos = audioCtx.createGain();
+            gainNodeNodos.gain.setValueAtTime(0, audioCtx.currentTime);
+            
+            osciladorFijo = audioCtx.createOscillator();
+            osciladorFijo.type = 'sine';
+            osciladorFijo.frequency.setValueAtTime(220, audioCtx.currentTime);
+            
+            osciladorModulador = audioCtx.createOscillator();
+            osciladorModulador.type = 'triangle';
+            osciladorModulador.frequency.setValueAtTime(330, audioCtx.currentTime);
+            
+            osciladorFijo.connect(gainNodeNodos);
+            osciladorModulador.connect(gainNodeNodos);
+            gainNodeNodos.connect(audioCtx.destination);
+            
+            osciladorFijo.start();
+            osciladorModulador.start();
+            
+            avisoInicio.style.opacity = '0';
+        }
+
+        function mutarGalaxiaSuperior() {
+            const palabraActual = palabras[Math.floor(Math.random() * totalPalabras)];
+            const ancho = window.innerWidth;
+            const alto = canvas.parentElement.offsetTop; 
+            
+            const margenX = ancho * 0.12;
+            const margenY = alto * 0.15;
+            
+            estrellasData.forEach((estrella, j) => {
+                const x = margenX + Math.random() * (ancho - (margenX * 2));
+                const y = margenY + Math.random() * (alto - (margenY * 2));
+                
+                estrella.elemento.style.left = x + 'px';
+                estrella.elemento.style.top = y + 'px';
+                estrella.texto.innerText = palabraActual[j];
+            });
+        }
+
+        function escribirUnPasoAsemico() {
+            if (escritorSubtitulo.x > window.innerWidth * 0.85) {
+                reiniciarSubtitulo();
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(escritorSubtitulo.x, escritorSubtitulo.y);
+
+            escritorSubtitulo.x += escritorSubtitulo.pasoPixel;
+            
+            const fuerzaRetorno = (escritorSubtitulo.yBase - escritorSubtitulo.y) * 0.15;
+            escritorSubtitulo.y += (Math.random() * 10 - 5) + fuerzaRetorno;
+
+            ctx.lineTo(escritorSubtitulo.x, escritorSubtitulo.y);
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, ' + (0.45 + Math.random() * 0.4) + ')';
+            ctx.lineWidth = 1.0 + Math.random() * 0.5;
+            ctx.stroke();
+        }
+
+        canvas.height = canvas.parentElement.getBoundingClientRect().height;
+        escritorSubtitulo.y = canvas.height / 2;
+        escritorSubtitulo.yBase = canvas.height / 2;
+        mutarGalaxiaSuperior();
+
+        let contadorMovimiento = 0;
+        let lastMoveTime = Date.now();
+
+        window.addEventListener('mousemove', (e) => {
+            inicializarAudio();
+            if (!audioCtx) return;
+            
+            const now = Date.now();
+            const dt = now - lastMoveTime;
+            lastMoveTime = now;
+            
+            const dx = e.movementX;
+            const dy = e.movementY;
+            const velocidad = Math.sqrt(dx * dx + dy * dy) / (dt || 1);
+            
+            escribirUnPasoAsemico();
+            
+            const proporcionX = e.clientX / window.innerWidth;
+            const frecuenciaBase = 110 + (proporcionX * 380);
+            osciladorFijo.frequency.setTargetAtTime(frecuenciaBase, audioCtx.currentTime, 0.1);
+            osciladorModulador.frequency.setTargetAtTime(frecuenciaBase * 1.5, audioCtx.currentTime, 0.1);
+            const volumenTarget = Math.min(velocidad * 0.12, 0.25);
+            gainNodeNodos.gain.setTargetAtTime(volumenTarget, audioCtx.currentTime, 0.05);
+            contadorMovimiento++;
+            if (contadorMovimiento % 18 === 0) {
+                mutarGalaxiaSuperior();
+            }
+        });
+        
+        setInterval(() => {
+            const timeSinceLastMove = Date.now() - lastMoveTime;
+            if (timeSinceLastMove > 100 && audioCtx && gainNodeNodos) {
+                gainNodeNodos.gain.setTargetAtTime(0, audioCtx.currentTime, 0.12);
+            }
+        }, 50);
+    </script>
+</body>
+</html>
